@@ -1,0 +1,13 @@
+
+#upload the firmware into a raw image file  (128K 128*1024 it could be smaller actually)
+dfu-util --device 0483:df11 --alt 0 --upload lb2img.bin --dfuse-address 0x08000000:131072
+
+#download the firmware into device flash over the dfu
+dfu-util --device 0483:df11 --alt 0 --upload lb2img.bin --dfuse-address 0x08000000:131072
+
+#download bitstream
+dfu-util --device 0483:df11 --alt 0 --download gen.bin --dfuse-address 0x08020000 
+dfu-util --device 0483:df11 --alt 0 --upload gen_upl.bin --dfuse-address 0x08020000:340604
+
+#size
+#dfu-util --device 0483:df11 --alt 0 --download sz1.bin --dfuse-address 0x08020000:4
