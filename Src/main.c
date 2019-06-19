@@ -311,7 +311,7 @@ int main(void)
 
   push_bitstream ();
   
- __enable_irq();
+// __enable_irq();
  
   /* USER CODE END 2 */
 
