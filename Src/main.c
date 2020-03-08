@@ -104,6 +104,7 @@ uint8_t boot_mode_check (void)
 }
 
 
+
 void push_bitstream ()
 {
 
@@ -111,60 +112,20 @@ void push_bitstream ()
 
     /* Disable interrupts */
 //    __disable_irq();
+//    if (boot_mode_check())
 
+#ifdef DBG_PRINT
+	printf("pre flash unlock\n");
+#endif
 
-    if (boot_mode_check())
-    {
-
-	HAL_GPIO_WritePin(LEDMCU2_GPIO_Port, LEDMCU2_Pin, GPIO_PIN_SET);
-
-	HAL_GPIO_WritePin(CBUS_CLOCK_GPIO_Port, CBUS_CLOCK_Pin, GPIO_PIN_RESET);
-
-	HAL_GPIO_WritePin(CBUS_PROGB_GPIO_Port, CBUS_PROGB_Pin, GPIO_PIN_RESET);
-
-	progb_set = 0;
-    
-	//wait until INITB is down
-	while (!HAL_GPIO_ReadPin(CBUS_INITB_GPIO_Port, CBUS_INITB_Pin))
-	{
-	    if (!progb_set)
-	    {
-		progb_set = 1;
-		HAL_GPIO_WritePin(CBUS_PROGB_GPIO_Port, CBUS_PROGB_Pin, GPIO_PIN_SET);
-//		delay();
-	    }
-	}
-
-	//loop for ever
-	uint8_t b = 0;
-
-	while (1)
-	{
-	    uint8_t j;
-	    b++;
-
-	    j = 8;
-	    while (j--)
-	    {
-		HAL_GPIO_WritePin(CBUS_CLOCK_GPIO_Port, CBUS_CLOCK_Pin, GPIO_PIN_RESET);
-		//asm ("nop");
-	    
-		if (b & (1<<j) )
-		    HAL_GPIO_WritePin(CBUS_DATA_GPIO_Port, CBUS_DATA_Pin, GPIO_PIN_SET);
-		else HAL_GPIO_WritePin(CBUS_DATA_GPIO_Port, CBUS_DATA_Pin, GPIO_PIN_RESET);
-
-//		delay();
-
-		HAL_GPIO_WritePin(CBUS_CLOCK_GPIO_Port, CBUS_CLOCK_Pin, GPIO_PIN_SET);
-//		delay();
-	    }
-	}
-    }
-    
     HAL_FLASH_Unlock();
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_OPERR | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | FLASH_FLAG_PGSERR );
-    
-    
+
+#ifdef DBG_PRINT
+	printf("post flash unlock\n");
+#endif
+
+
     uint32_t bs_size = bitstream_size [0];
 //    bs_size += 8; //extra 8 clock cycles
     
@@ -173,8 +134,8 @@ void push_bitstream ()
     printf("config size %ld\n", bs_size);
 #endif
 
-    //set MCU2 LED
-    HAL_GPIO_WritePin(LEDMCU2_GPIO_Port, LEDMCU2_Pin, GPIO_PIN_SET);
+    //reset MCU2 LED
+    HAL_GPIO_WritePin(LEDMCU2_GPIO_Port, LEDMCU2_Pin, GPIO_PIN_RESET);
 
     //unset CLOCK
     HAL_GPIO_WritePin(CBUS_CLOCK_GPIO_Port, CBUS_CLOCK_Pin, GPIO_PIN_RESET);
@@ -256,17 +217,16 @@ void push_bitstream ()
 //	delay();
     }
 
-    HAL_GPIO_WritePin(LEDMCU1_GPIO_Port, LEDMCU1_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(LEDMCU2_GPIO_Port, LEDMCU2_Pin, GPIO_PIN_SET);
 
     HAL_FLASH_Lock();
 
     HAL_GPIO_WritePin(CBUS_CLOCK_GPIO_Port, CBUS_CLOCK_Pin, GPIO_PIN_RESET);
     
-   
-//    HAL_GPIO_WritePin(LEDMCU1_GPIO_Port, LEDMCU1_Pin, GPIO_PIN_RESET);
-
-    HAL_GPIO_WritePin(LEDMCU2_GPIO_Port, LEDMCU2_Pin, GPIO_PIN_RESET);    
 }
+
+
+
 
 /* USER CODE END 0 */
 
